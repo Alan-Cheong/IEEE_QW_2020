@@ -35,6 +35,10 @@ import argparse
 from dataclasses import dataclass
 from typing import List, Tuple
 import numpy as np
+import matplotlib
+
+# Use a non-interactive backend so this runs headless without display servers
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 # Physical constants (SI)
@@ -57,7 +61,13 @@ class Slit:
 
 
 def free_kernel_prefactor(dt: float, mass: float, hbar: float) -> complex:
-    return mass / (2.0 * np.pi * 1j * hbar * dt)
+    """Return the 1D free-particle propagator prefactor.
+
+    K(x, t) ~ sqrt(m / (2π i ħ t)) * exp(i m (Δx)^2 / (2 ħ t))
+    The overall constant does not affect the normalized intensity, but the
+    square-root form is standard and numerically more stable.
+    """
+    return np.sqrt(mass / (2.0 * np.pi * 1j * hbar * dt))
 
 
 def free_kernel_phase(dist2: np.ndarray, dt: float, mass: float, hbar: float) -> np.ndarray:
@@ -194,7 +204,7 @@ def plot_results(
 
     # Geometry panel
     ax0 = fig.add_subplot(gs[0])
-    for slit in slits:
+    for i, slit in enumerate(slits):
         ax0.add_patch(
             plt.Rectangle(
                 (slit.x_center - slit.width / 2.0, aperture_y - 0.5),
@@ -202,10 +212,9 @@ def plot_results(
                 1.0,
                 color="#4682b4",
                 alpha=0.6,
-                label="Street (slit)" if "__once__" not in ax0.__dict__ else None,
+                label="Street (slit)" if i == 0 else None,
             )
         )
-        ax0.__dict__["__once__"] = True
     ax0.axhline(screen_y, color="#2f4f4f", linestyle="--", label="Maxwell Rd (screen)")
     ax0.plot([source_x], [0.0], marker="*", color="#d62728", markersize=12, label="Prudential Tower (source)")
     ax0.set_ylabel("y (distance)")
