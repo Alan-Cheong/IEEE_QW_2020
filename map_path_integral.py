@@ -4,7 +4,8 @@ Map-inspired multi-slit simulation using Feynman's path integral (free propagato
 
 - Prudential Tower: point source
 - North–south streets: treated as parallel slits on a single aperture plane
-- Maxwell Road: detection screen (line) where intensity is measured
+- Maxwell Road: detection screen (line) where intensity is measured. The
+  origin (0, 0) is set at the junction of Wallich Road and Maxwell Road.
 
 The program computes the complex amplitude at each point on the screen by
 integrating the free-particle propagator from the source to each point within
@@ -18,8 +19,9 @@ Two unit systems are supported:
   2) dimensionless: sets m = hbar = 1 and uses distances as times (good for
      qualitative patterns at human scales)
 
-Example:
+Example (origin at Wallich×Maxwell, screen at y=0):
   python map_path_integral.py --preset sg --units dimensionless \
+      --screen-y 0 --aperture-y 400 --source-y 800 \
       --output maxwell_intensity.png
 
 To tweak streets manually:
@@ -121,6 +123,7 @@ def preset_to_slits(preset: str) -> List[Slit]:
 def compute_screen_intensity(
     slits: List[Slit],
     source_x: float,
+    source_y: float,
     aperture_y: float,
     screen_y: float,
     screen_width: float,
@@ -133,8 +136,7 @@ def compute_screen_intensity(
 
     Returns (x_screen, intensity_normalized).
     """
-    if screen_y <= aperture_y:
-        raise ValueError("screen_y must be greater than aperture_y")
+    # No strict ordering is required; we use |Δy| to define time slices
 
     # Screen sampling points
     x_screen = np.linspace(-screen_width / 2.0, screen_width / 2.0, screen_samples)
@@ -143,16 +145,16 @@ def compute_screen_intensity(
     units_key = units.strip().lower()
     if units_key == "electron":
         v = compute_velocity_for_electron(energy_ev)
-        dt1 = aperture_y / v
-        dt2 = (screen_y - aperture_y) / v
+        dt1 = abs(aperture_y - source_y) / v
+        dt2 = abs(screen_y - aperture_y) / v
         mass = ELECTRON_MASS
         hbar = HBAR
     elif units_key == "dimensionless":
         # Handy qualitative mode: m=hbar=1, and time equals distance along y.
         mass = 1.0
         hbar = 1.0
-        dt1 = float(aperture_y)
-        dt2 = float(screen_y - aperture_y)
+        dt1 = float(abs(aperture_y - source_y))
+        dt2 = float(abs(screen_y - aperture_y))
     else:
         raise ValueError("units must be 'electron' or 'dimensionless'")
 
@@ -169,7 +171,7 @@ def compute_screen_intensity(
         xs, dx = slit.sample_points(slit_samples)
 
         # Source -> slit (vector over slit samples)
-        dist2_src = (xs - source_x) ** 2 + (y1 - 0.0) ** 2
+        dist2_src = (xs - source_x) ** 2 + (y1 - source_y) ** 2
         k1 = c1 * free_kernel_phase(dist2_src, dt1, mass, hbar)
 
         # Slit -> screen (matrix: screen_samples x slit_samples)
@@ -245,8 +247,9 @@ def main():
     )
     p.add_argument("--units", default="dimensionless", choices=["dimensionless", "electron"], help="Unit system")
     p.add_argument("--energy-eV", type=float, default=50.0, help="Electron energy (eV) if --units=electron")
-    p.add_argument("--aperture-y", type=float, default=600.0, help="Distance from source to streets (same units as x)")
-    p.add_argument("--screen-y", type=float, default=1000.0, help="Distance from source to Maxwell Rd screen")
+    p.add_argument("--source-y", type=float, default=800.0, help="y of Prudential Tower (origin at Wallich×Maxwell)")
+    p.add_argument("--aperture-y", type=float, default=400.0, help="y of streets/aperture line (origin at Wallich×Maxwell)")
+    p.add_argument("--screen-y", type=float, default=0.0, help="y of Maxwell Rd screen (origin at Wallich×Maxwell)")
     p.add_argument("--screen-width", type=float, default=800.0, help="Extent of screen plotted across x")
     p.add_argument("--screen-samples", type=int, default=1401, help="Number of x samples on screen")
     p.add_argument("--slit-samples", type=int, default=301, help="Samples across each street width")
@@ -263,6 +266,7 @@ def main():
     x_screen, intensity = compute_screen_intensity(
         slits=slits,
         source_x=args.source_x,
+        source_y=args.source_y,
         aperture_y=args.aperture_y,
         screen_y=args.screen_y,
         screen_width=args.screen_width,
@@ -273,7 +277,7 @@ def main():
     )
 
     title = (
-        f"Screen @ y={args.screen_y}, streets @ y={args.aperture_y}, "
+        f"Origin at Wallich×Maxwell; Screen y={args.screen_y}, Streets y={args.aperture_y}, Source y={args.source_y}; "
         f"units={args.units}, energy={args.energy_eV} eV"
     )
     plot_results(
