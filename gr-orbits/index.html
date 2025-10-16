@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Relativistic Planetary Orbits (1PN)</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Relativistic Planetary Orbits (1PN)</h1>
+    <p>Mercury, Venus, Earth, and Mars orbiting the Sun with an optional 1PN GR correction.</p>
+  </header>
+
+  <section class="controls">
+    <button id="playPause">Play</button>
+    <button id="reset">Reset</button>
+    <label>
+      Speed
+      <input id="speed" type="range" min="0.1" max="20" value="1" step="0.1" />
+      <span id="speedVal">1x</span>
+    </label>
+    <label title="Scale for GR correction; 0 disables, 1 is real 1PN order.">
+      GR factor
+      <input id="grFactor" type="range" min="0" max="2" value="1" step="0.01" />
+      <span id="grVal">1.00</span>
+    </label>
+    <label>
+      Trails
+      <input id="trails" type="checkbox" checked />
+    </label>
+  </section>
+
+  <section class="canvas-wrap">
+    <canvas id="canvas" width="900" height="900"></canvas>
+  </section>
+
+  <footer>
+    <small>
+      Units: AU, years, AU/year. Sun fixed at the origin; Newtonian gravity plus adjustable 1PN correction.
+      The 1PN term is an approximation to capture perihelion precession; for visualization only.
+    </small>
+  </footer>
+
+  <script src="sim.js"></script>
+</body>
+</html>
