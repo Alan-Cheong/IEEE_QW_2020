@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Relativistic Inner Planets Simulator</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="toolbar">
+      <div class="controls">
+        <button id="playPause">Pause</button>
+        <button id="reset">Reset</button>
+        <label>
+          Relativity (1PN)
+          <input id="relativityToggle" type="checkbox" checked />
+        </label>
+        <label>
+          Speed
+          <input id="speedSlider" type="range" min="1" max="200" step="1" value="20" />
+          <span id="speedValue">20x</span>
+        </label>
+        <label>
+          Trail length
+          <input id="trailSlider" type="range" min="100" max="6000" step="100" value="2000" />
+          <span id="trailValue">2000</span>
+        </label>
+        <label>
+          Scale
+          <select id="scaleSelect">
+            <option value="auto" selected>Auto-fit</option>
+            <option value="1">±1 AU</option>
+            <option value="2">±2 AU</option>
+            <option value="3">±3 AU</option>
+            <option value="5">±5 AU</option>
+          </select>
+        </label>
+      </div>
+      <div class="readout">
+        <span id="timeLabel">t = 0.00 years</span>
+        <span id="modeLabel">Mode: 1PN</span>
+      </div>
+    </div>
+    <canvas id="simCanvas"></canvas>
+
+    <script src="./main.js"></script>
+  </body>
+</html>
